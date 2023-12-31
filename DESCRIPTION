@@ -1,0 +1,17 @@
+Package: PreProcessR
+Type: Package
+Title: Data Preprocessing Tools for Analysis
+Version: 0.1.6
+Author: Scott Miner
+Maintainer: Scott Miner <scott.miner.data.scientist@gmail.com>
+Description: PreProcessR offers a comprehensive suite of tools for preprocessing 
+    and exploring datasets in preparation for analytical modeling. Key features 
+    include handling missing values, data normalization, outlier detection, and 
+    data visualization. Functions like calculate_IQR for calculating the interquartile 
+    range and identifying outliers, createHistograms for visualizing data distributions, 
+    and estimateBoxCoxLambda for Box-Cox transformation, make it an essential package 
+    for data analysts and researchers.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
