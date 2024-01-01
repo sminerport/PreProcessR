@@ -1,7 +1,7 @@
 Package: PreProcessR
 Type: Package
 Title: Data Preprocessing Tools for Analysis
-Version: 0.1.6
+Version: 0.1.7
 Author: Scott Miner
 Maintainer: Scott Miner <scott.miner.data.scientist@gmail.com>
 Description: PreProcessR offers a comprehensive suite of tools for preprocessing 

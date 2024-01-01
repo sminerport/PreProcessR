@@ -1,27 +1,55 @@
-#' Plot IQR and Outliers
+#' Create Boxplot for a Numeric Column by Categorical Group
+#'
+#' This function creates boxplots for a specified numeric column in a data frame,
+#' distributed by a specified categorical variable. It's useful for visualizing
+#' the distribution of the numeric variable across different categories.
+#'
+#' @param data A data frame containing the data.
+#' @param numeric_column The name of the numeric column to plot.
+#' @param category_column The name of the categorical column to group by.
+#'
+#' @return A ggplot object representing the boxplot of the numeric column, grouped by the categorical variable.
+#' @importFrom ggplot2 ggplot aes_string geom_boxplot labs theme_minimal
+#' @export
+#' @examples
+#' # Assuming 'iris' dataset and 'Species' as the categorical variable
+#' createBoxplotByCategory(iris, "Sepal.Length", "Species")
+
+createBoxplotByCategory <- function(data, numeric_column, category_column) {
+    if (!requireNamespace("ggplot2", quietly = TRUE)) {
+        stop("ggplot2 must be installed to use this function.")
+    }
+
+    ggplot2::ggplot(data, ggplot2::aes_string(x = category_column, y = numeric_column)) +
+        ggplot2::geom_boxplot() +
+        ggplot2::labs(title = paste("Boxplot of", numeric_column, "by", category_column)) +
+        ggplot2::theme_minimal()
+}
+
+
+#' Create Boxplot for a Specified Column
 #'
 #' This function creates a boxplot for a specified column in a data frame,
-#' highlighting the IQR and outliers.
+#' which is useful for visualizing the distribution and identifying outliers.
 #'
 #' @param data A data frame containing the data.
 #' @param column The name of the column to plot.
 #'
 #' @return A ggplot object representing the boxplot of the column.
+#' @importFrom ggplot2 ggplot geom_boxplot labs theme_minimal
 #' @export
-#'
 #' @examples
-#' # example code
-#' plot_IQR(mtcars, "mpg")
+#' createBoxplot(mtcars, "mpg")
 
-plot_IQR <- function(data, column) {
-    if (!requireNamespace("ggplot2", quickly = TRUE)) {
+createBoxplot <- function(data, column) {
+    if (!requireNamespace("ggplot2", quietly = TRUE)) {
         stop("ggplot2 must be installed to use this function.")
     }
 
-    ggplot(data, aes_string(y = column)) +
-        geom_boxplot() +
-        labs(title = paste("Boxplot of", column), y = column) +
-        theme_minimal()
+    ggplot2::ggplot(data, ggplot2::aes_string(y = column)) +
+        ggplot2::geom_boxplot() +
+        ggplot2::labs(title = paste("Boxplot of", column), y = column) +
+        ggplot2::theme_minimal()
 }
 
 
