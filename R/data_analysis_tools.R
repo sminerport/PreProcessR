@@ -11,6 +11,7 @@
 #' @return A ggplot object representing the boxplot of the numeric column, grouped by the categorical variable.
 #' @importFrom ggplot2 ggplot aes_string geom_boxplot labs theme_minimal
 #' @export
+#'
 #' @examples
 #' # Assuming 'iris' dataset and 'Species' as the categorical variable
 #' createBoxplotByCategory(iris, "Sepal.Length", "Species")
@@ -38,6 +39,7 @@ createBoxplotByCategory <- function(data, numeric_column, category_column) {
 #' @return A ggplot object representing the boxplot of the column.
 #' @importFrom ggplot2 ggplot geom_boxplot labs theme_minimal
 #' @export
+#'
 #' @examples
 #' createBoxplot(mtcars, "mpg")
 
@@ -65,6 +67,7 @@ createBoxplot <- function(data, column) {
 #' @return A list with six elements: Column (the name of the column),
 #'         Q1 (first quartile), Q3 (third quartile), IQR (the interquartile range),
 #'         Lower Bound, Upper Bound, and Outliers (vector of outlier values).
+#' @importFrom stats quantile
 #' @export
 #'
 #' @examples
@@ -107,6 +110,8 @@ calculate_IQR <- function(data, column) {
 #' @param column_name The name of the column for which to estimate lambda.
 #'
 #' @return The estimated lambda value for the Box-Cox transformation.
+#' @importFrom MASS boxcox
+#' @importFrom stats as.formula
 #' @export
 #'
 #' @examples
@@ -149,9 +154,11 @@ estimateBoxCoxLambda <- function(data, column_name) {
 #' @export
 #'
 #' @examples
-#' data(Glass)
-#' lambda_values <- applyBoxCoxToAll(Glass)
-#' print(lambda_values)
+#' if (requireNamespace("mlbench", quietly = TRUE)) {
+#'     data(Glass, package = "mlbench")
+#'     lambda_values <- applyBoxCoxToAll(Glass)
+#'     print(lambda_values)
+#' }
 
 # Apply estimateBoxCoxLambda to all numeric columns in the Glass dataset
 applyBoxCoxToAll <- function(data) {
@@ -176,6 +183,7 @@ applyBoxCoxToAll <- function(data) {
 #' This function creates histograms for all numeric columns in a given dataframe.
 #' @param data A dataframe.
 #' @param bins Number of bins for the histogram.
+#' @importFrom ggplot2 ggplot aes_string geom_histogram labs
 #' @export
 #' @examples
 #' createHistograms(mtcars)

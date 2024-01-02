@@ -18,7 +18,9 @@ in a given dataset. It returns a named vector of lambda values, with NA for
 columns where the estimation is not applicable or fails.
 }
 \examples{
-data(Glass)
-lambda_values <- applyBoxCoxToAll(Glass)
-print(lambda_values)
+if (requireNamespace("mlbench", quietly = TRUE)) {
+    data(Glass, package = "mlbench")
+    lambda_values <- applyBoxCoxToAll(Glass)
+    print(lambda_values)
+}
 }
