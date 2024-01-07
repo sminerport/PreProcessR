@@ -1,62 +1,3 @@
-#' Create Boxplot for a Numeric Column by Categorical Group
-#'
-#' This function creates boxplots for a specified numeric column in a data frame,
-#' distributed by a specified categorical variable. It's useful for visualizing
-#' the distribution of the numeric variable across different categories.
-#'
-#' @param data A data frame containing the data.
-#' @param numeric_column The name of the numeric column to plot.
-#' @param category_column The name of the categorical column to group by.
-#'
-#' @return A ggplot object representing the boxplot of the numeric column, grouped by the categorical variable.
-#' @importFrom ggplot2 ggplot aes_string geom_boxplot labs theme_minimal
-#' @export
-#'
-#' @examples
-#' # Assuming 'iris' dataset and 'Species' as the categorical variable
-#' createBoxplotByCategory(iris, "Sepal.Length", "Species")
-
-createBoxplotByCategory <-
-    function(data, numeric_column, category_column) {
-        if (!requireNamespace("ggplot2", quietly = TRUE)) {
-            stop("ggplot2 must be installed to use this function.")
-        }
-
-        ggplot2::ggplot(data,
-                        ggplot2::aes_string(x = category_column, y = numeric_column)) +
-            ggplot2::geom_boxplot() +
-            ggplot2::labs(title = paste("Boxplot of", numeric_column, "by", category_column)) +
-            ggplot2::theme_minimal()
-    }
-
-
-#' Create Boxplot for a Specified Column
-#'
-#' This function creates a boxplot for a specified column in a data frame,
-#' which is useful for visualizing the distribution and identifying outliers.
-#'
-#' @param data A data frame containing the data.
-#' @param column The name of the column to plot.
-#'
-#' @return A ggplot object representing the boxplot of the column.
-#' @importFrom ggplot2 ggplot geom_boxplot labs theme_minimal
-#' @export
-#'
-#' @examples
-#' createBoxplot(mtcars, "mpg")
-
-createBoxplot <- function(data, column) {
-    if (!requireNamespace("ggplot2", quietly = TRUE)) {
-        stop("ggplot2 must be installed to use this function.")
-    }
-
-    ggplot2::ggplot(data, ggplot2::aes_string(y = column)) +
-        ggplot2::geom_boxplot() +
-        ggplot2::labs(title = paste("Boxplot of", column), y = column) +
-        ggplot2::theme_minimal()
-}
-
-
 #' Calculate Interquartile Range (IQR) and Identify Outliers
 #'
 #' This function calculates the interquartile range (IQR) for a specified column
@@ -73,14 +14,14 @@ createBoxplot <- function(data, column) {
 #' @export
 #'
 #' @examples
-#' calculate_IQR(mtcars, "mpg")
+#' calculateIQR(mtcars, "mpg")
 #'
-#' # To apply calculate_IQR to all numeric columns in a dataframe:
+#' # To apply calculateIQR to all numeric columns in a dataframe:
 #' numeric_columns <- sapply(mtcars, is.numeric)
-#' IQR_results <- lapply(names(mtcars)[numeric_columns], function(col) calculate_IQR(mtcars, col))
+#' IQR_results <- lapply(names(mtcars)[numeric_columns], function(col) calculateIQR(mtcars, col))
 #'
 
-calculate_IQR <- function(data, column) {
+calculateIQR <- function(data, column) {
     Q1 <- quantile(data[[column]], 0.25, names = FALSE)
     Q3 <- quantile(data[[column]], 0.75, names = FALSE)
     IQR <- Q3 - Q1
@@ -224,12 +165,97 @@ createHistograms <- function(data, bins = 30, facet = FALSE) {
             ggplot2::geom_histogram(bins = bins,
                                     fill = "blue",
                                     color = "black") +
-            ggplot2::facet_wrap( ~ variable, scales = "free") +
+            ggplot2::facet_wrap(~ variable, scales = "free") +
             ggplot2::labs(x = "Value", y = "Frequency") +
             ggplot2::theme_minimal()
         print(p)
     }
 }
+
+
+#' Create Boxplots for Numeric Columns
+#'
+#' This function creates a boxplot for each numeric column in a data frame.
+#' Optionally, it can create a single plot with a boxplot for each numeric column using facets.
+#'
+#' @param data A data frame containing the data.
+#' @param facet Logical; if TRUE, create a single faceted plot for all boxplots.
+#' @return A list of ggplot objects representing the boxplots of the numeric columns, or a single ggplot object if faceting.
+#' @importFrom ggplot2 ggplot aes_string geom_boxplot labs theme_minimal facet_wrap
+#' @importFrom reshape2 melt
+#' @export
+#'
+#' @examples
+#' createBoxplots(mtcars)
+#' createBoxplots(mtcars, facet = TRUE)
+
+createBoxplots <- function(data, facet = FALSE) {
+    if (!requireNamespace("ggplot2", quietly = TRUE)) {
+        stop("ggplot2 must be installed to use createBoxplots")
+    }
+
+    # Identify numeric columns
+    numericCols <- sapply(data, is.numeric)
+
+    if (!facet) {
+        # Loop through numeric columns and create boxplots
+        plots <-
+            lapply(names(data)[numericCols], function(colName) {
+                ggplot2::ggplot(data, ggplot2::aes_string(y = colName)) +
+                    ggplot2::geom_boxplot() +
+                    ggplot2::labs(title = paste("Boxplot of", colName),
+                                  y = colName) +
+                    ggplot2::theme_minimal()
+            })
+
+        # Print all plots
+        for (p in plots) {
+            print(p)
+        }
+    } else {
+        # Create a single faceted plot for all boxplots
+        long_data <- reshape2::melt(data[, numericCols])
+        p <- ggplot2::ggplot(long_data, ggplot2::aes(y = value)) +
+            ggplot2::geom_boxplot() +
+            ggplot2::facet_wrap( ~ variable, scales = "free_y") +
+            ggplot2::labs(x = "Variable", y = "Value") +
+            ggplot2::theme_minimal()
+        print(p)
+    }
+}
+
+
+#' Create Boxplot for a Numeric Column by Categorical Group
+#'
+#' This function creates boxplots for a specified numeric column in a data frame,
+#' distributed by a specified categorical variable. It's useful for visualizing
+#' the distribution of the numeric variable across different categories.
+#'
+#' @param data A data frame containing the data.
+#' @param numeric_column The name of the numeric column to plot.
+#' @param category_column The name of the categorical column to group by.
+#'
+#' @return A ggplot object representing the boxplot of the numeric column, grouped by the categorical variable.
+#' @importFrom ggplot2 ggplot aes_string geom_boxplot labs theme_minimal
+#' @export
+#'
+#' @examples
+#' # Assuming 'iris' dataset and 'Species' as the categorical variable
+#' createBoxplotByCategory(iris, "Sepal.Length", "Species")
+
+createBoxplotByCategory <-
+    function(data, numeric_column, category_column) {
+        if (!requireNamespace("ggplot2", quietly = TRUE)) {
+            stop("ggplot2 must be installed to use this function.")
+        }
+
+        ggplot2::ggplot(data,
+                        ggplot2::aes_string(x = category_column, y = numeric_column)) +
+            ggplot2::geom_boxplot() +
+            ggplot2::labs(title = paste("Boxplot of", numeric_column, "by", category_column)) +
+            ggplot2::theme_minimal()
+    }
+
 
 #' Create Correlation Plot
 #'
