@@ -19,6 +19,7 @@ Imports:
     MASS,
     ggplot2,
     stats,
-    corrplot
+    corrplot,
+    reshape2
 Suggests:
     mlbench

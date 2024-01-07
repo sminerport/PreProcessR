@@ -4,17 +4,21 @@
 \alias{createHistograms}
 \title{Create Histograms for Numeric Columns}
 \usage{
-createHistograms(data, bins = 30)
+createHistograms(data, bins = 30, facet = FALSE)
 }
 \arguments{
 \item{data}{A dataframe.}
 
 \item{bins}{Number of bins for the histogram.}
+
+\item{facet}{Boolean; if TRUE, create a single faceted plot for all histograms.}
 }
 \description{
 This function creates histograms for all numeric columns in a given dataframe.
+Optionally, it can create a single plot with a histogram for each numeric column using facets.
 }
 \examples{
 createHistograms(mtcars)
 createHistograms(iris, bins = 20)
+createHistograms(mtcars, facet = TRUE)
 }

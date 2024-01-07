@@ -16,16 +16,18 @@
 #' # Assuming 'iris' dataset and 'Species' as the categorical variable
 #' createBoxplotByCategory(iris, "Sepal.Length", "Species")
 
-createBoxplotByCategory <- function(data, numeric_column, category_column) {
-    if (!requireNamespace("ggplot2", quietly = TRUE)) {
-        stop("ggplot2 must be installed to use this function.")
-    }
+createBoxplotByCategory <-
+    function(data, numeric_column, category_column) {
+        if (!requireNamespace("ggplot2", quietly = TRUE)) {
+            stop("ggplot2 must be installed to use this function.")
+        }
 
-    ggplot2::ggplot(data, ggplot2::aes_string(x = category_column, y = numeric_column)) +
-        ggplot2::geom_boxplot() +
-        ggplot2::labs(title = paste("Boxplot of", numeric_column, "by", category_column)) +
-        ggplot2::theme_minimal()
-}
+        ggplot2::ggplot(data,
+                        ggplot2::aes_string(x = category_column, y = numeric_column)) +
+            ggplot2::geom_boxplot() +
+            ggplot2::labs(title = paste("Boxplot of", numeric_column, "by", category_column)) +
+            ggplot2::theme_minimal()
+    }
 
 
 #' Create Boxplot for a Specified Column
@@ -89,16 +91,18 @@ calculate_IQR <- function(data, column) {
     lower_outliers <- data[[column]][data[[column]] < lower_bound]
     upper_outliers <- data[[column]][data[[column]] > upper_bound]
 
-    return(list(
-        Column = column,
-        Q1 = Q1,
-        Q3 = Q3,
-        IQR = IQR,
-        Lower_Bound = lower_bound,
-        Upper_Bound = upper_bound,
-        Lower_Half_Outliers = sort(lower_outliers),
-        Upper_Half_Outliers = sort(upper_outliers)
-    ))
+    return(
+        list(
+            Column = column,
+            Q1 = Q1,
+            Q3 = Q3,
+            IQR = IQR,
+            Lower_Bound = lower_bound,
+            Upper_Bound = upper_bound,
+            Lower_Half_Outliers = sort(lower_outliers),
+            Upper_Half_Outliers = sort(upper_outliers)
+        )
+    )
 }
 
 #' Estimate Optimal Lambda for Box-Cox Transformation
@@ -121,7 +125,6 @@ calculate_IQR <- function(data, column) {
 
 # Function to estimate lambda for Box-Cox transformation
 estimateBoxCoxLambda <- function(data, column_name) {
-
     # Check if the column exists in the dataset
     if (!column_name %in% names(data)) {
         stop("Column not found in the dataset.")
@@ -129,7 +132,9 @@ estimateBoxCoxLambda <- function(data, column_name) {
 
     # Check for non-positive values
     if (any(data[[column_name]] <= 0)) {
-        stop("Non-positive values found. Box-Cox transformation requires all values to be positive.")
+        stop(
+            "Non-positive values found. Box-Cox transformation requires all values to be positive."
+        )
     }
 
     # Estimate lambda using boxcox
@@ -181,14 +186,17 @@ applyBoxCoxToAll <- function(data) {
 #' Create Histograms for Numeric Columns
 #'
 #' This function creates histograms for all numeric columns in a given dataframe.
+#' Optionally, it can create a single plot with a histogram for each numeric column using facets.
 #' @param data A dataframe.
 #' @param bins Number of bins for the histogram.
-#' @importFrom ggplot2 ggplot aes_string geom_histogram labs
+#' @param facet Boolean; if TRUE, create a single faceted plot for all histograms.
+#' @importFrom ggplot2 ggplot aes_string geom_histogram labs facet_wrap
 #' @export
 #' @examples
 #' createHistograms(mtcars)
 #' createHistograms(iris, bins = 20)
-createHistograms <- function(data, bins = 30) {
+#' createHistograms(mtcars, facet = TRUE)
+createHistograms <- function(data, bins = 30, facet = FALSE) {
     # Ensure ggplot2 is available
     if (!requireNamespace("ggplot2", quietly = TRUE)) {
         stop("ggplot2 must be installed to use createHistograms")
@@ -197,11 +205,28 @@ createHistograms <- function(data, bins = 30) {
     # Identify numeric columns
     numericCols <- sapply(data, is.numeric)
 
-    # Loop through numeric columns and create histograms
-    for (colName in names(data)[numericCols]) {
-        p <- ggplot2::ggplot(data, ggplot2::aes_string(x = colName)) +
-            ggplot2::geom_histogram(bins = bins, fill = "blue", color = "black") +
-            ggplot2::labs(title = colName)
+    if (!facet) {
+        # Loop through numeric columns and create histograms
+        for (colName in names(data)[numericCols]) {
+            p <- ggplot2::ggplot(data, ggplot2::aes_string(x = colName)) +
+                ggplot2::geom_histogram(
+                    bins = bins,
+                    fill = "blue",
+                    color = "black"
+                ) +
+                ggplot2::labs(title = colName)
+            print(p)
+        }
+    } else {
+        # Create a single faceted plot for all histograms
+        long_data <- reshape2::melt(data[, numericCols])
+        p <- ggplot2::ggplot(long_data, ggplot2::aes(x = value)) +
+            ggplot2::geom_histogram(bins = bins,
+                                    fill = "blue",
+                                    color = "black") +
+            ggplot2::facet_wrap( ~ variable, scales = "free") +
+            ggplot2::labs(x = "Value", y = "Frequency") +
+            ggplot2::theme_minimal()
         print(p)
     }
 }
