@@ -205,3 +205,41 @@ createHistograms <- function(data, bins = 30) {
         print(p)
     }
 }
+
+#' Create Correlation Plot
+#'
+#' This funciton creates a correlation plot for all numeric columns in a given dataframe
+#' Non-numeric columns are automatically excluded.
+#'
+#' @param data A dataframe containing the data.
+#' @importFrom corrplot corrplot
+#' @export
+#' @examples
+#' data(mtcars)
+#' createCorrPlot(mtcars)
+
+createCorrPlot <- function(data) {
+    # Ensure corrplot is available
+    if (!requireNamespace("corrplot", quietly = TRUE)) {
+        stop("corrplot must be installed to use createCorrPlot")
+    }
+
+    # Remove non-numeric columns
+    numeric_data <- data[sapply(data, is.numeric)]
+
+    # Calculate correlations
+    correlations <- cor(numeric_data)
+
+    # Create the correlation plot
+    corrplot::corrplot(
+        correlations,
+        order = 'hclust',
+        tl.cex = 1.6,
+        number.cex = 0.9,
+        method = "circle",
+        type = "lower",
+        addCoef.col = "black",
+        tl.col = "black",
+        tl.srt = 45
+    )
+}
