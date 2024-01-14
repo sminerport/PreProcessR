@@ -4,16 +4,23 @@
 \alias{createCorrPlot}
 \title{Create Correlation Plot}
 \usage{
-createCorrPlot(data)
+createCorrPlot(data, plotType = "corrplot", hclust = FALSE)
 }
 \arguments{
 \item{data}{A dataframe containing the data.}
+
+\item{plotType}{The type of plot to generate, either "corrplot", "heatmap", or "pairplot".}
+
+\item{hclust}{Logical, should hierarchical clustering be performed for the heatmap.}
 }
 \description{
-This funciton creates a correlation plot for all numeric columns in a given dataframe
-Non-numeric columns are automatically excluded.
+This function creates a correlation plot for all numeric columns in a given dataframe.
+Non-numeric columns are automatically excluded. The type of plot is determined by
+the 'plotType' argument. It can create a standard correlation plot, a heatmap with
+hierarchical clustering, or a pair plot.
 }
 \examples{
 data(mtcars)
-createCorrPlot(mtcars)
+createCorrPlot(mtcars, plotType = "heatmap", hclust = TRUE)
+createCorrPlot(mtcars, plotType = "pairplot")
 }

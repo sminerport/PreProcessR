@@ -259,20 +259,29 @@ createBoxplotByCategory <-
 
 #' Create Correlation Plot
 #'
-#' This funciton creates a correlation plot for all numeric columns in a given dataframe
-#' Non-numeric columns are automatically excluded.
+#' This function creates a correlation plot for all numeric columns in a given dataframe.
+#' Non-numeric columns are automatically excluded. The type of plot is determined by
+#' the 'plotType' argument. It can create a standard correlation plot, a heatmap with
+#' hierarchical clustering, or a pair plot.
 #'
 #' @param data A dataframe containing the data.
+#' @param plotType The type of plot to generate, either "corrplot", "heatmap", or "pairplot".
+#' @param hclust Logical, should hierarchical clustering be performed for the heatmap.
 #' @importFrom corrplot corrplot
+#' @importFrom pheatmap pheatmap
+#' @importFrom GGally ggpairs
 #' @export
 #' @examples
 #' data(mtcars)
-#' createCorrPlot(mtcars)
-
-createCorrPlot <- function(data) {
-    # Ensure corrplot is available
-    if (!requireNamespace("corrplot", quietly = TRUE)) {
-        stop("corrplot must be installed to use createCorrPlot")
+#' createCorrPlot(mtcars, plotType = "heatmap", hclust = TRUE)
+#' createCorrPlot(mtcars, plotType = "pairplot")
+createCorrPlot <- function(data, plotType = "corrplot", hclust = FALSE) {
+    # Check for required packages
+    if (plotType == "heatmap" && !requireNamespace("pheatmap", quietly = TRUE)) {
+        stop("pheatmap must be installed to create a heatmap.")
+    }
+    if (plotType == "pairplot" && !requireNamespace("GGally", quietly = TRUE)) {
+        stop("GGally must be installed to create a pair plot.")
     }
 
     # Remove non-numeric columns
@@ -281,16 +290,30 @@ createCorrPlot <- function(data) {
     # Calculate correlations
     correlations <- cor(numeric_data)
 
-    # Create the correlation plot
-    corrplot::corrplot(
-        correlations,
-        order = 'hclust',
-        tl.cex = 1.6,
-        number.cex = 0.9,
-        method = "circle",
-        type = "lower",
-        addCoef.col = "black",
-        tl.col = "black",
-        tl.srt = 45
-    )
+    if (plotType == "corrplot") {
+        # Existing corrplot code
+        corrplot::corrplot(
+            correlations,
+            order = ifelse(hclust, 'hclust', 'original'),
+            tl.cex = 1.6,
+            number.cex = 0.9,
+            method = "circle",
+            type = "lower",
+            addCoef.col = "black",
+            tl.col = "black",
+            tl.srt = 45
+        )
+    } else if (plotType == "heatmap") {
+        # Code to generate a heatmap with hierarchical clustering
+        pheatmap::pheatmap(
+            correlations,
+            clustering_distance_rows = ifelse(hclust, "euclidean", "none"),
+            clustering_distance_cols = ifelse(hclust, "euclidean", "none"),
+            clustering_method = ifelse(hclust, "complete", "none"),
+            display_numbers = TRUE
+        )
+    } else if (plotType == "pairplot") {
+        # Code to generate a pair plot using GGally::ggpairs or similar
+        GGally::ggpairs(data = numeric_data)
+    }
 }
