@@ -9,7 +9,7 @@ createCorrPlot(data, plotType = "corrplot", hclust = FALSE)
 \arguments{
 \item{data}{A dataframe containing the data.}
 
-\item{plotType}{The type of plot to generate, either "corrplot", "heatmap", or "pairplot".}
+\item{plotType}{The type of plot to generate, either "corrplot" or "pairplot".}
 
 \item{hclust}{Logical, should hierarchical clustering be performed for the heatmap.}
 }

@@ -22,5 +22,4 @@ Imports:
     corrplot,
     reshape2
 Suggests:
-    mlbench,
-    pheatmap
+    mlbench
