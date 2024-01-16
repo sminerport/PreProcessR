@@ -209,7 +209,7 @@ createBarCharts <- function(data, facet = FALSE) {
         # Loop through categorical columns and create bar charts
         for (colName in names(data)[categoricalCols]) {
             p <- ggplot2::ggplot(data, ggplot2::aes_string(x = colName)) +
-                ggplot2::geom_bar(fill = "blue", color = "blakc") +
+                ggplot2::geom_bar(fill = "blue", color = "black") +
                 ggplot2::labs(
                     title = paste("Distribution of", colName),
                     x = colName,
