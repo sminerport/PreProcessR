@@ -196,9 +196,12 @@ createHistograms <- function(data, bins = 30, facet = FALSE) {
 #' @export
 
 createBarCharts <- function(data, facet = FALSE) {
-    # Ensure ggplot2 is available
+    # Ensure ggplot2 and reshape2 are available
     if (!requireNamespace("ggplot2", quietly = TRUE)) {
         stop("ggplot2 must be installed to use createBarCharts")
+    }
+    if (!requireNamespace("reshape2", quietly = TRUE)) {
+        stop("reshape2 must be installed to use createBarCharts")
     }
 
     # Identify categorical columns
@@ -214,12 +217,15 @@ createBarCharts <- function(data, facet = FALSE) {
                     title = paste("Distribution of", colName),
                     x = colName,
                     y = "Frequency"
-                ) + ggplot2::theme_minimal()
+                ) +
+                ggplot2::theme_minimal()
             print(p)
         }
     } else {
         # Create a single faceted plot for all bar charts
-        long_data <- reshape2::melt(data[, categoricalCols])
+        # Melt the data into long format for faceting
+        long_data <-
+            reshape2::melt(data, measure.vars = names(data)[categoricalCols])
         p <- ggplot2::ggplot(long_data, ggplot2::aes(x = value)) +
             ggplot2::geom_bar(fill = "blue", color = "black") +
             ggplot2::facet_wrap( ~ variable, scales = "free_x") +
