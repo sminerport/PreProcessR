@@ -172,6 +172,62 @@ createHistograms <- function(data, bins = 30, facet = FALSE) {
     }
 }
 
+#' Create Bar Charts for Categorical Columns
+#'
+#' This function creates bar charts for all categorical columns in a given dataframe.
+#' Optionally, it can create a single plot with a bar chart for each categorical column using facets.
+#'
+#' @param data A dataframe containing the data to be plotted.
+#' @param facet Logical; if TRUE, create a single faceted plot for all bar charts.
+#'              If FALSE, create individual plots for each categorical column. Defaults to FALSE.
+#'
+#' @importFrom ggplot2 ggplot aes_string geom_bar labs facet_wrap theme_minimal
+#' @importFrom reshape2 melt
+#' @import reshape2
+#'
+#' @return An invisible list of ggplot objects if `facet` is FALSE. If `facet` is TRUE,
+#'         a single ggplot object is returned. Each plot represents the frequency
+#'         distribution of a categorical variable in the dataframe.
+#'
+#' @examples
+#' createBarCharts(mtcars, facet = FALSE)
+#' createBarCharts(iris, facet = TRUE)
+#'
+#' @export
+
+createBarCharts <- function(data, facet = FALSE) {
+    # Ensure ggplot2 is available
+    if (!requireNamespace("ggplot2", quietly = TRUE)) {
+        stop("ggplot2 must be installed to use createBarCharts")
+    }
+
+    # Identify categorical columns
+    categoricalCols <-
+        sapply(data, is.factor) | sapply(data, is.character)
+
+    if (!facet) {
+        # Loop through categorical columns and create bar charts
+        for (colName in names(data)[categoricalCols]) {
+            p <- ggplot2::ggplot(data, ggplot2::aes_string(x = colName)) +
+                ggplot2::geom_bar(fill = "blue", color = "blakc") +
+                ggplot2::labs(
+                    title = paste("Distribution of", colName),
+                    x = colName,
+                    y = "Frequency"
+                ) + ggplot2::theme_minimal()
+            print(p)
+        }
+    } else {
+        # Create a single faceted plot for all bar charts
+        long_data <- reshape2::melt(data[, categoricalCols])
+        p <- ggplot2::ggplot(long_data, ggplot2::aes(x = value)) +
+            ggplot2::geom_bar(fill = "blue", color = "black") +
+            ggplot2::facet_wrap( ~ variable, scales = "free_x") +
+            ggplot2::labs(x = "Category", y = "Frequency") +
+            ggplot2::theme_minimal()
+        print(p)
+    }
+}
 
 #' Create Boxplots for Numeric Columns
 #'
@@ -304,3 +360,4 @@ createCorrPlot <- function(data, plotType = "corrplot", hclust = FALSE) {
         GGally::ggpairs(data = numeric_data)
     }
 }
+
