@@ -218,7 +218,8 @@ createBarCharts <- function(data, facet = FALSE) {
                     x = colName,
                     y = "Frequency"
                 ) +
-                ggplot2::theme_minimal()
+                ggplot2::theme_minimal() +
+                ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
             print(p)
         }
     } else {
@@ -230,7 +231,8 @@ createBarCharts <- function(data, facet = FALSE) {
             ggplot2::geom_bar(fill = "blue", color = "black") +
             ggplot2::facet_wrap( ~ variable, scales = "free_x") +
             ggplot2::labs(x = "Category", y = "Frequency") +
-            ggplot2::theme_minimal()
+            ggplot2::theme_minimal() +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
         print(p)
     }
 }
