@@ -210,7 +210,16 @@ createBarCharts <- function(data, facet = FALSE) {
 
     if (!facet) {
         # Loop through categorical columns and create bar charts
+        plots <- list()
         for (colName in names(data)[categoricalCols]) {
+            # Calculate frequencies and reorder factor levels
+            data[[colName]] <- factor(data[[colName]])
+            levels <- levels(data[[colName]])
+            freq <- table(data[[colName]])
+            levels <- levels[order(-freq)]
+            data[[colName]] <- factor(data[[colName]], levels = levels)
+
+            # Create the plot
             p <- ggplot2::ggplot(data, ggplot2::aes_string(x = colName)) +
                 ggplot2::geom_bar(fill = "blue", color = "black") +
                 ggplot2::labs(
@@ -220,14 +229,22 @@ createBarCharts <- function(data, facet = FALSE) {
                 ) +
                 ggplot2::theme_minimal() +
                 ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
-            print(p)
+            plots[[colName]] <- p
         }
+        invisible(plots)
     } else {
         # Create a single faceted plot for all bar charts
         # Melt the data into long format for faceting
         long_data <-
             reshape2::melt(data, measure.vars = names(data)[categoricalCols])
-        p <- ggplot2::ggplot(long_data, ggplot2::aes(x = value)) +
+
+        # Calculate frequencies for ordering within each facet
+        long_data <- within(long_data, {
+            value <- factor(value)
+            order <- reorder(value, -table(value))
+        })
+
+        p <- ggplot2::ggplot(long_data, ggplot2::aes(x = order)) +
             ggplot2::geom_bar(fill = "blue", color = "black") +
             ggplot2::facet_wrap( ~ variable, scales = "free_x") +
             ggplot2::labs(x = "Category", y = "Frequency") +
