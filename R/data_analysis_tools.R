@@ -212,11 +212,9 @@ createBarCharts <- function(data, facet = FALSE) {
         # Loop through categorical columns and create bar charts
         plots <- list()
         for (colName in names(data)[categoricalCols]) {
-            # Calculate frequencies and reorder factor levels
-            data[[colName]] <- factor(data[[colName]])
-            levels <- levels(data[[colName]])
-            freq <- table(data[[colName]])
-            levels <- levels[order(-freq)]
+            # Exclude NA values for frequency calculation and ordering
+            freq <- table(data[[colName]], useNA = "no")
+            levels <- names(sort(freq, decreasing = TRUE))
             data[[colName]] <- factor(data[[colName]], levels = levels)
 
             # Create the plot
@@ -231,26 +229,23 @@ createBarCharts <- function(data, facet = FALSE) {
                 ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
             plots[[colName]] <- p
         }
-        invisible(plots)
+        return(plots)
     } else {
         # Create a single faceted plot for all bar charts
-        # Melt the data into long format for faceting
-        long_data <-
-            reshape2::melt(data, measure.vars = names(data)[categoricalCols])
+        # Melt the data into long format for faceting, excluding NA values
+        long_data <- reshape2::melt(data, measure.vars = names(data)[categoricalCols])
+        long_data <- na.omit(long_data)
 
         # Calculate frequencies for ordering within each facet
-        long_data <- within(long_data, {
-            value <- factor(value)
-            order <- reorder(value, -table(value))
-        })
+        long_data$value <- reorder(long_data$value, long_data$variable, function(x) -length(x))
 
-        p <- ggplot2::ggplot(long_data, ggplot2::aes(x = order)) +
+        p <- ggplot2::ggplot(long_data, ggplot2::aes(x = value)) +
             ggplot2::geom_bar(fill = "blue", color = "black") +
             ggplot2::facet_wrap( ~ variable, scales = "free_x") +
             ggplot2::labs(x = "Category", y = "Frequency") +
             ggplot2::theme_minimal() +
             ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
-        print(p)
+        return(p)
     }
 }
 
