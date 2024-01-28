@@ -1,3 +1,53 @@
+#' Detect Degenerate Distributions in Categorical Predictors
+#'
+#' This function examines categorical predictors in a dataset to identify
+#' degenerate distributions, including zero variance and near-zero variance predictors.
+#' Zero variance predictors have a single unique value, while near-zero variance
+#' predictors have a very small number of unique values with severely disproportionate
+#' frequencies.
+#'
+#' @param data A dataframe containing the dataset to be analyzed.
+#' @return A list indicating which predictors are degenerate. Each predictor is labeled as
+#'         either "Zero Variance" or "Near-Zero Variance" based on the criteria.
+#' @examples
+#' library(mlbench)
+#' data("Soybean")
+#' degenerate_predictors <- detect_degenerate_distributions(Soybean)
+#' print(degenerate_predictors)
+#' @export
+#'
+#' @importFrom stats setNames
+detect_degenerate_distributions <- function(data) {
+    results <- list()
+
+    for (col in names(data)) {
+        if (is.categorical(data[[col]])) {
+            freqs <- table(data[[col]])
+            unique_values <- length(freqs)
+            total_samples <- nrow(data)
+            most_common_freq <- max(freqs)
+            second_most_common_freq <- sort(freqs, decreasing = TRUE)[2]
+
+            # Zero variance check
+            if (unique_values == 1) {
+                results[[col]] <- "Zero Variance"
+                next
+            }
+
+            # Near-zero variance check
+            fraction_unique <- unique_values / total_samples
+            freq_ratio <- ifelse(second_most_common_freq > 0, most_common_freq / second_most_common_freq, Inf)
+
+            if (fraction_unique < 0.1 && freq_ratio > 20) {
+                results[[col]] <- "Near-Zero Variance"
+            }
+        }
+    }
+
+    return(results)
+}
+
+
 #' Calculate Interquartile Range (IQR) and Identify Outliers
 #'
 #' This function calculates the interquartile range (IQR) for a specified column
