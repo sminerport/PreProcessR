@@ -1,3 +1,77 @@
+#' Visualize Missing Data Patterns
+#'
+#' This function creates visualizations to help understand the patterns of missing data in the dataset.
+#' It generates two plots: one showing the proportion of missing data per predictor, and another
+#' showing the distribution of missing data across classes.
+#'
+#' @param data A dataframe representing the dataset.
+#' @param missing_proportions A named vector with predictors as names and proportions of missing data as values.
+#' @param missing_by_class A table with class labels and counts of missing data occurrences in each class.
+#' @import ggplot2
+#' @export
+#' @examples
+#' data("Soybean", package = "mlbench")
+#' missing_proportions <- missing_data_proportion(Soybean)
+#' missing_by_class <- missing_data_by_class(Soybean, "Class")
+#' visualize_missing_data(Soybean, missing_proportions, missing_by_class)
+visualize_missing_data <-
+    function(data,
+             missing_proportions,
+             missing_by_class) {
+        # Visualize missing data proportions
+        ggplot(data = as.data.frame(missing_proportions), aes(x = rownames(missing_proportions), y = V1)) +
+            geom_bar(stat = "identity") +
+            theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+            labs(x = "Predictor", y = "Proportion of Missing Data", title = "Missing Data Proportions per Predictor")
+
+        # Visualize missing data by class
+        ggplot(data = as.data.frame(missing_by_class),
+               aes(x = names(missing_by_class), y = missing_by_class)) +
+            geom_bar(stat = "identity") +
+            theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+            labs(x = "Class", y = "Count of Missing Data", title = "Distribution of Missing Data Across Classes")
+
+    }
+
+
+#' Analyze Missing Data by Class
+#'
+#' This function examines the pattern of missing data in relation to the classes of the dataset.
+#' It identifies rows with missing data and tabulates the frequency of each class within these rows.
+#'
+#' @param data A dataframe representing the dataset.
+#' @param class_col The name of the column representing the class or target variable.
+#' @return A table with class labels and counts of missing data occurrences in each class.
+#' @export
+#' @examples
+#' data("Soybean", package = "mlbench")
+#' missing_by_class <- missing_data_by_class(Soybean, "Class")
+#' print(missing_by_class)
+missing_data_by_class <- function(data, class_col) {
+    data_with_na <- data[!complete.cases(data),]
+    table(data_with_na[[class_col]])
+}
+
+
+#' Calculate Proportion of Missing Data
+#'
+#' This function calculates the proportion of missing data for each predictor in the dataset.
+#' It returns a named vector where names are the predictors and values are the proportions
+#' of missing data.
+#'
+#' @param data A dataframe representing the dataset.
+#' @return A named vector with predictors as names and proportions of missing data as values.
+#' @export
+#' @examples
+#' data("Soybean", package = "mlbench")
+#' missing_proportions <- missing_data_proportion(Soybean)
+#' print(missing_proportions)
+missing_data_proportion <- function(data) {
+    sapply(data, function(x)
+        sum(is.na(x)) / length(x))
+}
+
+
 #' Detect Degenerate Distributions in Categorical Predictors
 #'
 #' This function examines categorical predictors in a dataset to identify
@@ -24,7 +98,8 @@ detect_degenerate_distributions <- function(data) {
             unique_values <- length(freqs)
             total_samples <- nrow(data)
             most_common_freq <- max(freqs)
-            second_most_common_freq <- sort(freqs, decreasing = TRUE)[2]
+            second_most_common_freq <-
+                sort(freqs, decreasing = TRUE)[2]
 
             # Zero variance check
             if (unique_values == 1) {
@@ -34,7 +109,12 @@ detect_degenerate_distributions <- function(data) {
 
             # Near-zero variance check
             fraction_unique <- unique_values / total_samples
-            freq_ratio <- ifelse(second_most_common_freq > 0, most_common_freq / second_most_common_freq, Inf)
+            freq_ratio <-
+                ifelse(
+                    second_most_common_freq > 0,
+                    most_common_freq / second_most_common_freq,
+                    Inf
+                )
 
             if (fraction_unique < 0.1 && freq_ratio > 20) {
                 results[[col]] <- "Near-Zero Variance"
@@ -213,7 +293,7 @@ createHistograms <- function(data, bins = 30, facet = FALSE) {
             ggplot2::geom_histogram(bins = bins,
                                     fill = "blue",
                                     color = "black") +
-            ggplot2::facet_wrap(~ variable, scales = "free") +
+            ggplot2::facet_wrap( ~ variable, scales = "free") +
             ggplot2::labs(x = "Value", y = "Frequency") +
             ggplot2::theme_minimal()
         print(p)
@@ -263,10 +343,12 @@ createBarCharts <- function(data, facet = FALSE) {
             # Exclude NA values for frequency calculation and ordering
             freq <- table(data[[colName]], useNA = "no")
             levels <- names(sort(freq, decreasing = TRUE))
-            data[[colName]] <- factor(data[[colName]], levels = levels)
+            data[[colName]] <-
+                factor(data[[colName]], levels = levels)
 
             # Create the plot
-            p <- ggplot2::ggplot(data, ggplot2::aes_string(x = colName)) +
+            p <-
+                ggplot2::ggplot(data, ggplot2::aes_string(x = colName)) +
                 ggplot2::geom_bar(fill = "blue", color = "black") +
                 ggplot2::labs(
                     title = paste("Distribution of", colName),
@@ -281,15 +363,18 @@ createBarCharts <- function(data, facet = FALSE) {
     } else {
         # Create a single faceted plot for all bar charts
         # Melt the data into long format for faceting, excluding NA values
-        long_data <- reshape2::melt(data, measure.vars = names(data)[categoricalCols])
+        long_data <-
+            reshape2::melt(data, measure.vars = names(data)[categoricalCols])
         long_data <- na.omit(long_data)
 
         # Calculate frequencies for ordering within each facet
-        long_data$value <- reorder(long_data$value, long_data$variable, function(x) -length(x))
+        long_data$value <-
+            reorder(long_data$value, long_data$variable, function(x)
+                - length(x))
 
         p <- ggplot2::ggplot(long_data, ggplot2::aes(x = value)) +
             ggplot2::geom_bar(fill = "blue", color = "black") +
-            ggplot2::facet_wrap( ~ variable, scales = "free_x") +
+            ggplot2::facet_wrap(~ variable, scales = "free_x") +
             ggplot2::labs(x = "Category", y = "Frequency") +
             ggplot2::theme_minimal() +
             ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
@@ -341,7 +426,7 @@ createBoxplots <- function(data, facet = FALSE) {
         long_data <- reshape2::melt(data[, numericCols])
         p <- ggplot2::ggplot(long_data, ggplot2::aes(y = value)) +
             ggplot2::geom_boxplot() +
-            ggplot2::facet_wrap( ~ variable, scales = "free_y") +
+            ggplot2::facet_wrap(~ variable, scales = "free_y") +
             ggplot2::labs(x = "Variable", y = "Value") +
             ggplot2::theme_minimal()
         print(p)
@@ -398,34 +483,37 @@ createBoxplotByCategory <-
 #' data(mtcars)
 #' createCorrPlot(mtcars, plotType = "heatmap", hclust = TRUE)
 #' createCorrPlot(mtcars, plotType = "pairplot")
-createCorrPlot <- function(data, plotType = "corrplot", hclust = FALSE) {
-    # Check for required packages
-    if (plotType == "pairplot" && !requireNamespace("GGally", quietly = TRUE)) {
-        stop("GGally must be installed to create a pair plot.")
+createCorrPlot <-
+    function(data,
+             plotType = "corrplot",
+             hclust = FALSE) {
+        # Check for required packages
+        if (plotType == "pairplot" &&
+            !requireNamespace("GGally", quietly = TRUE)) {
+            stop("GGally must be installed to create a pair plot.")
+        }
+
+        # Remove non-numeric columns
+        numeric_data <- data[sapply(data, is.numeric)]
+
+        # Calculate correlations
+        correlations <- cor(numeric_data)
+
+        if (plotType == "corrplot") {
+            # Existing corrplot code
+            corrplot::corrplot(
+                correlations,
+                order = ifelse(hclust, 'hclust', 'original'),
+                tl.cex = 1.6,
+                number.cex = 0.9,
+                method = "circle",
+                type = "lower",
+                addCoef.col = "black",
+                tl.col = "black",
+                tl.srt = 45
+            )
+        } else if (plotType == "pairplot") {
+            # Code to generate a pair plot using GGally::ggpairs or similar
+            GGally::ggpairs(data = numeric_data)
+        }
     }
-
-    # Remove non-numeric columns
-    numeric_data <- data[sapply(data, is.numeric)]
-
-    # Calculate correlations
-    correlations <- cor(numeric_data)
-
-    if (plotType == "corrplot") {
-        # Existing corrplot code
-        corrplot::corrplot(
-            correlations,
-            order = ifelse(hclust, 'hclust', 'original'),
-            tl.cex = 1.6,
-            number.cex = 0.9,
-            method = "circle",
-            type = "lower",
-            addCoef.col = "black",
-            tl.col = "black",
-            tl.srt = 45
-        )
-    } else if (plotType == "pairplot") {
-        # Code to generate a pair plot using GGally::ggpairs or similar
-        GGally::ggpairs(data = numeric_data)
-    }
-}
-
