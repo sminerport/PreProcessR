@@ -15,13 +15,11 @@
 #' degenerate_predictors <- detect_degenerate_distributions(Soybean)
 #' print(degenerate_predictors)
 #' @export
-#'
-#' @importFrom stats setNames
 detect_degenerate_distributions <- function(data) {
     results <- list()
 
     for (col in names(data)) {
-        if (is.categorical(data[[col]])) {
+        if (is.factor(data[[col]])) {
             freqs <- table(data[[col]])
             unique_values <- length(freqs)
             total_samples <- nrow(data)
