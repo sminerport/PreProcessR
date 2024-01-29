@@ -9,7 +9,7 @@ missing_data_by_class(data, class_col)
 \arguments{
 \item{data}{A dataframe representing the dataset.}
 
-\item{class_col}{The name of the column representing the class or target variable.}
+\item{class_col}{The name of the column representing the class or target variable as a string.}
 }
 \value{
 A table with class labels and counts of missing data occurrences in each class.

@@ -40,7 +40,7 @@ visualize_missing_data <-
 #' It identifies rows with missing data and tabulates the frequency of each class within these rows.
 #'
 #' @param data A dataframe representing the dataset.
-#' @param class_col The name of the column representing the class or target variable.
+#' @param class_col The name of the column representing the class or target variable as a string.
 #' @return A table with class labels and counts of missing data occurrences in each class.
 #' @export
 #' @examples
@@ -48,8 +48,18 @@ visualize_missing_data <-
 #' missing_by_class <- missing_data_by_class(Soybean, "Class")
 #' print(missing_by_class)
 missing_data_by_class <- function(data, class_col) {
-    data_with_na <- data[!complete.cases(data),]
-    table(data_with_na[[class_col]])
+    if (!class_col %in% names(data)) {
+        stop("class_col not found in the data")
+    }
+
+    data_with_na <- data[!complete.cases(data), ]
+    class_data_with_na <- data_with_na[[class_col]]
+
+    if (is.factor(class_data_with_na)) {
+        return(table(class_data_with_na, useNA = "ifany"))
+    } else {
+        stop("class_col is not a factor. This function is intended for categorical class variables.")
+    }
 }
 
 
