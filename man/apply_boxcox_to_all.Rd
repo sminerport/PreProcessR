@@ -20,7 +20,7 @@ columns where the estimation is not applicable or fails.
 \examples{
 if (requireNamespace("mlbench", quietly = TRUE)) {
     data(Glass, package = "mlbench")
-    lambda_values <- applyBoxCoxToAll(Glass)
+    lambda_values <- apply_boxcox_to_all(Glass)
     print(lambda_values)
 }
 }

@@ -20,6 +20,6 @@ of a specified column in a dataset. It requires all values in the column to be p
 }
 \examples{
 data(iris)
-lambda_value <- estimateBoxCoxLambda(iris, "Sepal.Length")
+lambda_value <- estimate_boxcox_lambda(iris, "Sepal.Length")
 print(lambda_value)
 }

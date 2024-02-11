@@ -22,7 +22,7 @@ This function creates bar charts for all categorical columns in a given datafram
 Optionally, it can create a single plot with a bar chart for each categorical column using facets.
 }
 \examples{
-createBarCharts(mtcars, facet = FALSE)
-createBarCharts(iris, facet = TRUE)
+create_bar_charts(mtcars, facet = FALSE)
+create_bar_charts(iris, facet = TRUE)
 
 }

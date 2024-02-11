@@ -112,7 +112,7 @@ detect_degenerate_distributions <- function(data) {
 #'
 #' @examples
 #' data(iris)
-#' lambda_value <- estimateBoxCoxLambda(iris, "Sepal.Length")
+#' lambda_value <- estimate_boxcox_lambda(iris, "Sepal.Length")
 #' print(lambda_value)
 
 # Function to estimate lambda for Box-Cox transformation
@@ -153,11 +153,11 @@ estimate_boxcox_lambda <- function(data, column_name) {
 #' @examples
 #' if (requireNamespace("mlbench", quietly = TRUE)) {
 #'     data(Glass, package = "mlbench")
-#'     lambda_values <- applyBoxCoxToAll(Glass)
+#'     lambda_values <- apply_boxcox_to_all(Glass)
 #'     print(lambda_values)
 #' }
 
-# Apply estimateBoxCoxLambda to all numeric columns in the Glass dataset
+# Apply estimate_boxcox_lambda to all numeric columns in the Glass dataset
 apply_boxcox_to_all <- function(data) {
     # Filter only numeric columns
     numeric_columns <- sapply(data, is.numeric)
@@ -166,7 +166,7 @@ apply_boxcox_to_all <- function(data) {
     # Apply the function to each numeric column
     sapply(names(numeric_data), function(col) {
         tryCatch({
-            estimateBoxCoxLambda(data, col)
+            estimate_boxcox_lambda(data, col)
         }, warning = function(w) {
             NA  # Return NA in case of non-positive values or other warnings
         }, error = function(e) {

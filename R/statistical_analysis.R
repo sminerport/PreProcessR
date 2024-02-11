@@ -14,11 +14,11 @@
 #' @export
 #'
 #' @examples
-#' calculateIQR(mtcars, "mpg")
+#' calculate_iqr(mtcars, "mpg")
 #'
-#' # To apply calculateIQR to all numeric columns in a dataframe:
+#' # To apply calculate_iqr to all numeric columns in a dataframe:
 #' numeric_columns <- sapply(mtcars, is.numeric)
-#' IQR_results <- lapply(names(mtcars)[numeric_columns], function(col) calculateIQR(mtcars, col))
+#' IQR_results <- lapply(names(mtcars)[numeric_columns], function(col) calculate_iqr(mtcars, col))
 #'
 
 calculate_iqr <- function(data, column) {

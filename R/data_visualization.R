@@ -74,7 +74,7 @@ create_histograms <- function(data, bins = 30, facet = FALSE) {
             ggplot2::geom_histogram(bins = bins,
                                     fill = "blue",
                                     color = "black") +
-            ggplot2::facet_wrap( ~ variable, scales = "free") +
+            ggplot2::facet_wrap(~ variable, scales = "free") +
             ggplot2::labs(x = "Value", y = "Frequency") +
             ggplot2::theme_minimal()
         print(p)
@@ -99,18 +99,18 @@ create_histograms <- function(data, bins = 30, facet = FALSE) {
 #'         distribution of a categorical variable in the dataframe.
 #'
 #' @examples
-#' createBarCharts(mtcars, facet = FALSE)
-#' createBarCharts(iris, facet = TRUE)
+#' create_bar_charts(mtcars, facet = FALSE)
+#' create_bar_charts(iris, facet = TRUE)
 #'
 #' @export
 
 create_bar_charts <- function(data, facet = FALSE) {
     # Ensure ggplot2 and reshape2 are available
     if (!requireNamespace("ggplot2", quietly = TRUE)) {
-        stop("ggplot2 must be installed to use createBarCharts")
+        stop("ggplot2 must be installed to use create_bar_charts")
     }
     if (!requireNamespace("reshape2", quietly = TRUE)) {
-        stop("reshape2 must be installed to use createBarCharts")
+        stop("reshape2 must be installed to use create_bar_charts")
     }
 
     # Identify categorical columns
@@ -155,7 +155,7 @@ create_bar_charts <- function(data, facet = FALSE) {
 
         p <- ggplot2::ggplot(long_data, ggplot2::aes(x = value)) +
             ggplot2::geom_bar(fill = "blue", color = "black") +
-            ggplot2::facet_wrap(~ variable, scales = "free_x") +
+            ggplot2::facet_wrap( ~ variable, scales = "free_x") +
             ggplot2::labs(x = "Category", y = "Frequency") +
             ggplot2::theme_minimal() +
             ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
@@ -163,34 +163,67 @@ create_bar_charts <- function(data, facet = FALSE) {
     }
 }
 
-#' Create Boxplots for Numeric Columns
+#' Create Boxplots for Numeric Data
 #'
-#' This function creates a boxplot for each numeric column in a data frame.
-#' Optionally, it can create a single plot with a boxplot for each numeric column using facets.
+#' This function creates boxplots for numeric data within a dataframe. It can generate boxplots for all numeric columns, or for a specified numeric column, optionally grouped by a categorical column. Faceting is supported to create a single plot with a boxplot for each numeric column.
 #'
 #' @param data A data frame containing the data.
-#' @param facet Logical; if TRUE, create a single faceted plot for all boxplots.
-#' @return A list of ggplot objects representing the boxplots of the numeric columns, or a single ggplot object if faceting.
-#' @importFrom ggplot2 ggplot aes_string geom_boxplot labs theme_minimal facet_wrap
+#' @param numeric_column Optionally, the name of a single numeric column to plot. If NULL, boxplots for all numeric columns are created. Defaults to NULL.
+#' @param category_column Optionally, the name of a categorical column to group the numeric data by. Only used if `numeric_column` is specified. Defaults to NULL.
+#' @param facet Logical; if TRUE and `numeric_column` is NULL, creates a single faceted plot for all numeric columns. If `numeric_column` is specified and `category_column` is NULL, faceting is ignored. Defaults to FALSE.
+#' @return A ggplot object representing the boxplot(s) of the numeric column(s). If multiple plots are generated without faceting, a list of ggplot objects is returned.
+#' @importFrom ggplot2 ggplot aes geom_boxplot labs theme_minimal facet_wrap
 #' @importFrom reshape2 melt
 #' @export
 #'
 #' @examples
-#' createBoxplots(mtcars)
-#' createBoxplots(mtcars, facet = TRUE)
+#' # Boxplot for all numeric columns
+#' create_boxplots(mtcars)
+#' # Faceted boxplot for all numeric columns
+#' create_boxplots(mtcars, facet = TRUE)
+#' # Boxplot for a specific column, grouped by a category
+#' create_boxplots(mtcars, numeric_column = "mpg", category_column = "cyl")
+#' # Faceted boxplot for a specific column (facet ignored if category_column is provided)
+#' create_boxplots(mtcars, numeric_column = "mpg", category_column = "cyl", facet = TRUE)
 
-create_boxplots <- function(data, facet = FALSE) {
-    if (!requireNamespace("ggplot2", quietly = TRUE)) {
-        stop("ggplot2 must be installed to use createBoxplots")
-    }
+create_boxplots <-
+    function(data,
+             numeric_column = NULL,
+             category_column = NULL,
+             facet = FALSE) {
+        # Check for required package
+        if (!requireNamespace("ggplot2", quietly = TRUE)) {
+            stop("ggplot2 must be installed to use create_boxplots")
+        }
 
-    # Identify numeric columns
-    numericCols <- sapply(data, is.numeric)
+        # If no numeric column is specified, use all numeric columns
+        if (is.null(numeric_column)) {
+            numericCols <- sapply(data, is.numeric)
+            data <- data[, numericCols, drop = FALSE]
+        } else {
+            data <- data[, c(numeric_column, category_column), drop = FALSE]
+        }
 
-    if (!facet) {
-        # Loop through numeric columns and create boxplots
-        plots <-
-            lapply(names(data)[numericCols], function(colName) {
+        # If faceting is requested without a category, treat all numeric columns separately
+        if (facet && is.null(category_column)) {
+            long_data <- reshape2::melt(data)
+            plot <-
+                ggplot2::ggplot(long_data, ggplot2::aes(y = value)) +
+                ggplot2::geom_boxplot() +
+                ggplot2::facet_wrap( ~ variable, scales = "free_y") +
+                ggplot2::labs(x = "Variable", y = "Value") +
+                ggplot2::theme_minimal()
+        } else if (!is.null(category_column)) {
+            # Create boxplot by category
+            plot <-
+                ggplot2::ggplot(data,
+                                ggplot2::aes_string(x = category_column, y = numeric_column)) +
+                ggplot2::geom_boxplot() +
+                ggplot2::labs(title = paste("Boxplot of", numeric_column, "by", category_column)) +
+                ggplot2::theme_minimal()
+        } else {
+            # Create individual boxplots for specified/each numeric column(s)
+            plots <- lapply(names(data), function(colName) {
                 ggplot2::ggplot(data, ggplot2::aes_string(y = colName)) +
                     ggplot2::geom_boxplot() +
                     ggplot2::labs(title = paste("Boxplot of", colName),
@@ -198,52 +231,20 @@ create_boxplots <- function(data, facet = FALSE) {
                     ggplot2::theme_minimal()
             })
 
-        # Print all plots
-        for (p in plots) {
-            print(p)
-        }
-    } else {
-        # Create a single faceted plot for all boxplots
-        long_data <- reshape2::melt(data[, numericCols])
-        p <- ggplot2::ggplot(long_data, ggplot2::aes(y = value)) +
-            ggplot2::geom_boxplot() +
-            ggplot2::facet_wrap(~ variable, scales = "free_y") +
-            ggplot2::labs(x = "Variable", y = "Value") +
-            ggplot2::theme_minimal()
-        print(p)
-    }
-}
-
-
-#' Create Boxplot for a Numeric Column by Categorical Group
-#'
-#' This function creates boxplots for a specified numeric column in a data frame,
-#' distributed by a specified categorical variable. It's useful for visualizing
-#' the distribution of the numeric variable across different categories.
-#'
-#' @param data A data frame containing the data.
-#' @param numeric_column The name of the numeric column to plot.
-#' @param category_column The name of the categorical column to group by.
-#'
-#' @return A ggplot object representing the boxplot of the numeric column, grouped by the categorical variable.
-#' @importFrom ggplot2 ggplot aes_string geom_boxplot labs theme_minimal
-#' @export
-#'
-#' @examples
-#' # Assuming 'iris' dataset and 'Species' as the categorical variable
-#' createBoxplotByCategory(iris, "Sepal.Length", "Species")
-
-create_boxplot_by_category <-
-    function(data, numeric_column, category_column) {
-        if (!requireNamespace("ggplot2", quietly = TRUE)) {
-            stop("ggplot2 must be installed to use this function.")
+            # If only one plot, don't return a list
+            if (length(plots) == 1) {
+                plot <- plots[[1]]
+            } else {
+                plot <- plots
+            }
         }
 
-        ggplot2::ggplot(data,
-                        ggplot2::aes_string(x = category_column, y = numeric_column)) +
-            ggplot2::geom_boxplot() +
-            ggplot2::labs(title = paste("Boxplot of", numeric_column, "by", category_column)) +
-            ggplot2::theme_minimal()
+        # Print or return the plot(s)
+        if (exists("plot")) {
+            print(plot)
+        } else {
+            return(plot)
+        }
     }
 
 

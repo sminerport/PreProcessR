@@ -22,10 +22,10 @@ in a data frame and identifies any outliers. It also returns the first and third
 quartiles, and the lower and upper bounds used for outlier detection.
 }
 \examples{
-calculateIQR(mtcars, "mpg")
+calculate_iqr(mtcars, "mpg")
 
-# To apply calculateIQR to all numeric columns in a dataframe:
+# To apply calculate_iqr to all numeric columns in a dataframe:
 numeric_columns <- sapply(mtcars, is.numeric)
-IQR_results <- lapply(names(mtcars)[numeric_columns], function(col) calculateIQR(mtcars, col))
+IQR_results <- lapply(names(mtcars)[numeric_columns], function(col) calculate_iqr(mtcars, col))
 
 }
