@@ -1,47 +1,81 @@
-#' Calculate Proportion of Missing Data
+#' Analyze Missing Data with Optional Class Analysis
 #'
 #' This function calculates the proportion of missing data for each predictor in the dataset.
-#' It returns a named vector where names are the predictors and values are the proportions
-#' of missing data.
+#' Optionally, if a class column is specified, it also examines the pattern of missing data in relation
+#' to the classes of the dataset. It can return results sorted by the proportion of missing data or,
+#' for class-specific analysis, by the count of missing occurrences within each class.
 #'
 #' @param data A dataframe representing the dataset.
-#' @return A named vector with predictors as names and proportions of missing data as values.
+#' @param class_col Optionally, the name of the column representing the class or target variable.
+#'        If NULL, the function will only calculate the proportion of missing data for each predictor.
+#'        Defaults to NULL.
+#' @param sort_by Determines how the results should be sorted.
+#'        "none": No sorting (default).
+#'        "proportion": Sort by the proportion of missing data.
+#'        "class": Sort by the count of missing data occurrences within each class, applicable only if class_col is provided.
+#' @return Depending on the input parameters, the function returns either:
+#'         - A named vector with predictors as names and proportions of missing data as values (default),
+#'         - Or, if class_col is specified, a list containing both the proportions of missing data and the
+#'           analysis of missing data by class. The results can be sorted based on the sort_by parameter.
 #' @export
 #' @examples
 #' data("Soybean", package = "mlbench")
-#' missing_proportions <- missing_data_proportion(Soybean)
+#' # Basic usage without class analysis
+#' missing_proportions <- analyze_missing_data(Soybean)
 #' print(missing_proportions)
-missing_data_proportion <- function(data) {
-    sapply(data, function(x)
-        sum(is.na(x)) / length(x))
-}
+#'
+#' # With class analysis, no sorting
+#' missing_analysis <- analyze_missing_data(Soybean, class_col = "Class")
+#' print(missing_analysis)
+#'
+#' # With class analysis, sorted by missing data proportion
+#' missing_analysis_sorted <- analyze_missing_data(Soybean, class_col = "Class", sort_by = "proportion")
+#' print(missing_analysis_sorted)
+#'
+#' # Note: Sorting by class count is only meaningful if class_col is provided
+#' # missing_analysis_class_sorted <- analyze_missing_data(Soybean, class_col = "Class", sort_by = "class")
+#' # print(missing_analysis_class_sorted)
 
-#' Analyze Missing Data by Class
-#'
-#' This function examines the pattern of missing data in relation to the classes of the dataset.
-#' It identifies rows with missing data and tabulates the frequency of each class within these rows.
-#'
-#' @param data A dataframe representing the dataset.
-#' @param class_col The name of the column representing the class or target variable as a string.
-#' @return A table with class labels and counts of missing data occurrences in each class.
-#' @export
-#' @examples
-#' data("Soybean", package = "mlbench")
-#' missing_by_class <- missing_data_by_class(Soybean, "Class")
-#' print(missing_by_class)
-missing_data_by_class <- function(data, class_col) {
+analyze_missing_data_patterns <- function(data, class_col, sort_order = "none") {
+    # Ensure the class column exists
     if (!class_col %in% names(data)) {
         stop("class_col not found in the data")
     }
 
-    data_with_na <- data[!complete.cases(data), ]
-    class_data_with_na <- data_with_na[[class_col]]
+    # Calculate the proportion of missing data for each predictor
+    missing_proportions <- sapply(data, function(x) sum(is.na(x)) / length(x))
 
-    if (is.factor(class_data_with_na)) {
-        return(table(class_data_with_na, useNA = "ifany"))
-    } else {
-        stop("class_col is not a factor. This function is intended for categorical class variables.")
+    # Apply sorting if requested
+    if (sort_order == "ascending") {
+        missing_proportions <- sort(missing_proportions, decreasing = FALSE)
+    } else if (sort_order == "descending") {
+        missing_proportions <- sort(missing_proportions, decreasing = TRUE)
     }
+
+    # Identify overall missing data percentage
+    overall_missing <- sum(sapply(data, function(x) sum(is.na(x)))) / sum(sapply(data, length))
+
+    # Analyze missing data by class
+    data_with_na <- data[!complete.cases(data), ]
+    missing_data_by_class <- table(data_with_na[[class_col]])
+
+    # Calculate the proportion of missing entries for each class
+    class_counts <- table(data[[class_col]])
+    missing_data_proportion_by_class <- missing_data_by_class / class_counts
+
+    # Sort missing data proportion by class if requested
+    if (sort_order == "ascending") {
+        missing_data_proportion_by_class <- sort(missing_data_proportion_by_class, decreasing = FALSE)
+    } else if (sort_order == "descending") {
+        missing_data_proportion_by_class <- sort(missing_data_proportion_by_class, decreasing = TRUE)
+    }
+
+    # Return a list containing the analysis
+    list(
+        Overall_Missing_Percentage = overall_missing,
+        Missing_Proportions_By_Predictor = missing_proportions,
+        Missing_Data_Proportion_By_Class = missing_data_proportion_by_class
+    )
 }
 
 #' Detect Degenerate Distributions in Categorical Predictors
