@@ -36,12 +36,7 @@
 #' # missing_analysis_class_sorted <- analyze_missing_data(Soybean, class_col = "Class", sort_by = "class")
 #' # print(missing_analysis_class_sorted)
 
-analyze_missing_data_patterns <- function(data, class_col, sort_order = "none") {
-    # Ensure the class column exists
-    if (!class_col %in% names(data)) {
-        stop("class_col not found in the data")
-    }
-
+analyze_missing_data_patterns <- function(data, class_col = NULL, sort_order = "none") {
     # Calculate the proportion of missing data for each predictor
     missing_proportions <- sapply(data, function(x) sum(is.na(x)) / length(x))
 
@@ -55,19 +50,28 @@ analyze_missing_data_patterns <- function(data, class_col, sort_order = "none") 
     # Identify overall missing data percentage
     overall_missing <- sum(sapply(data, function(x) sum(is.na(x)))) / sum(sapply(data, length))
 
-    # Analyze missing data by class
-    data_with_na <- data[!complete.cases(data), ]
-    missing_data_by_class <- table(data_with_na[[class_col]])
+    # Initialize missing_data_proportion_by_class as NULL
+    missing_data_proportion_by_class <- NULL
 
-    # Calculate the proportion of missing entries for each class
-    class_counts <- table(data[[class_col]])
-    missing_data_proportion_by_class <- missing_data_by_class / class_counts
+    if (!is.null(class_col)) {
+        if (!class_col %in% names(data)) {
+            stop("class_col not found in the data")
+        }
 
-    # Sort missing data proportion by class if requested
-    if (sort_order == "ascending") {
-        missing_data_proportion_by_class <- sort(missing_data_proportion_by_class, decreasing = FALSE)
-    } else if (sort_order == "descending") {
-        missing_data_proportion_by_class <- sort(missing_data_proportion_by_class, decreasing = TRUE)
+        # Analyze missing data by class
+        data_with_na <- data[!complete.cases(data), ]
+        missing_data_by_class <- table(data_with_na[[class_col]])
+
+        # Calculate the proportion of missing entries for each class
+        class_counts <- table(data[[class_col]])
+        missing_data_proportion_by_class <- missing_data_by_class / class_counts
+
+        # Sort missing data proportion by class if requested
+        if (sort_order == "ascending") {
+            missing_data_proportion_by_class <- sort(missing_data_proportion_by_class, decreasing = FALSE)
+        } else if (sort_order == "descending") {
+            missing_data_proportion_by_class <- sort(missing_data_proportion_by_class, decreasing = TRUE)
+        }
     }
 
     # Return a list containing the analysis

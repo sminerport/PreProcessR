@@ -4,7 +4,7 @@
 \alias{analyze_missing_data_patterns}
 \title{Analyze Missing Data with Optional Class Analysis}
 \usage{
-analyze_missing_data_patterns(data, class_col, sort_order = "none")
+analyze_missing_data_patterns(data, class_col = NULL, sort_order = "none")
 }
 \arguments{
 \item{data}{A dataframe representing the dataset.}
